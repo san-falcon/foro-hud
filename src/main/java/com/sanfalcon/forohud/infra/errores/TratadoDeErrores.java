@@ -45,7 +45,11 @@ public class TratadoDeErrores {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     protected ResponseEntity<Object> errorCuerpoDeSolicitud(HttpMessageNotReadableException ex, WebRequest request) {
-        String errorMessage = "El cuerpo de la solicitud es invalido";
-        return ResponseEntity.badRequest().body(errorMessage);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ValidacionDeIntegridadDatos(
+                HttpStatus.BAD_REQUEST.value(),
+                "Bab Request",
+                "El cuerpo de la solicitud es invalido",
+                "/",
+                LocalDateTime.now()));
     }
 }
