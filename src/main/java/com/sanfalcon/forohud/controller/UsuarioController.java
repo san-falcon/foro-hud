@@ -1,9 +1,7 @@
 package com.sanfalcon.forohud.controller;
 
-import com.sanfalcon.forohud.domain.usuario.DatosRegistrarUsuario;
-import com.sanfalcon.forohud.domain.usuario.DatosDetalleUsuario;
-import com.sanfalcon.forohud.domain.usuario.UsuarioEntity;
-import com.sanfalcon.forohud.domain.usuario.UsuarioRepository;
+import com.sanfalcon.forohud.domain.usuario.*;
+import com.sanfalcon.forohud.infra.security.jwt.JwtUtilsService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +23,9 @@ public class UsuarioController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private JwtUtilsService jwtUtilsService;
+
     @PostMapping("/crear")
     public ResponseEntity crearUsuario(@RequestBody @Valid DatosRegistrarUsuario datos, UriComponentsBuilder uriComponentsBuilder) {
         UsuarioEntity usuario = UsuarioEntity.builder()
@@ -33,8 +34,14 @@ public class UsuarioController {
                 .password(passwordEncoder.encode(datos.password())).build();
         usuarioRepository.save(usuario);
 
+        String token = this.jwtUtilsService.generarToken(usuario);
+
         URI uri = uriComponentsBuilder.path("/usuario/detalle/{id}").buildAndExpand(usuario.getId()).toUri();
-        return ResponseEntity.created(uri).body(new DatosDetalleUsuario(usuario));
+
+        DatosDetalleUsuario datosDetalleUsuario = new DatosDetalleUsuario(usuario);
+        AuthenticationSuccess datosCheckStatus = new AuthenticationSuccess(datosDetalleUsuario, token);
+
+        return ResponseEntity.created(uri).body(datosCheckStatus);
     }
 
     @GetMapping("/detalle/{id}")
