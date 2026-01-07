@@ -32,7 +32,10 @@ public class SecurityConfiguration {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) //? Administacion de session para crear una politica de session
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers(HttpMethod.POST,"/autenticacion").permitAll() //? Configuramos los endpoint que no estaran protegidos
+                        auth
+                                .requestMatchers(HttpMethod.POST, "/autenticacion").permitAll() //? Configuramos los endpoint que no estaran protegidos
+                                .requestMatchers("/autenticacion/check-status").authenticated()
+                                .requestMatchers("/usuario/**", "/dashboard/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
