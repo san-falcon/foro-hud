@@ -25,8 +25,12 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     @Autowired
     private JwtUtilsService jwtUtilsService;
+
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain) throws ServletException, IOException {
         var token = request.getHeader("Authorization");
         if (token != null) {
             token = token.replace("Bearer ", "");

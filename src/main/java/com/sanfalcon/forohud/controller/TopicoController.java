@@ -43,7 +43,9 @@ public class TopicoController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<DatosListaTopico>> listaTopicos(@PageableDefault(size = 10, sort = "fecha", direction = Sort.Direction.ASC) Pageable pageable) {
+    public ResponseEntity<Page<DatosListaTopico>> listaTopicos(
+            @PageableDefault(size = 10, sort = "fecha", direction = Sort.Direction.ASC) Pageable pageable
+    ) {
         return ResponseEntity.ok(topicoRespository.findAll(pageable).map(DatosListaTopico::new));
     }
 
