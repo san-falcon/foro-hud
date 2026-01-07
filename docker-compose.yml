@@ -1,0 +1,11 @@
+services:
+  db:
+    image: postgres:17.3
+    container_name: "db_foro_hud"
+    restart: always
+    environment:
+      - POSTGRES_DB=app_foro_hub
+      - POSTGRES_USER=user_foro_hub
+      - POSTGRES_PASSWORD=123456
+    ports:
+      - "5432:5432"
