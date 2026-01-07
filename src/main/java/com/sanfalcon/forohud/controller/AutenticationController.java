@@ -1,7 +1,6 @@
 package com.sanfalcon.forohud.controller;
 
-import com.sanfalcon.forohud.domain.usuario.DatosLoginUsuario;
-import com.sanfalcon.forohud.domain.usuario.UsuarioEntity;
+import com.sanfalcon.forohud.domain.usuario.*;
 import com.sanfalcon.forohud.infra.errores.ValidacionDeIntegridad;
 import com.sanfalcon.forohud.infra.security.DatosJWTToken;
 import com.sanfalcon.forohud.infra.security.jwt.JwtUtilsService;
@@ -15,10 +14,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("autenticacion")
@@ -40,12 +37,26 @@ public class AutenticationController {
             var usuarioAutenticado = this.authenticationManager.authenticate(datoaAFirmar);
 
             var JWTtoken = jwtUtilsService.generarToken((UsuarioEntity) usuarioAutenticado.getPrincipal());
-            return ResponseEntity.ok(new DatosJWTToken(JWTtoken));
+            var usuario = (UsuarioEntity) usuarioAutenticado.getPrincipal();
+
+            var datosDetalleUsuario = new DatosDetalleUsuario(usuario);
+
+            return ResponseEntity.ok(new AuthenticationSuccess(datosDetalleUsuario, JWTtoken));
         } catch (BadCredentialsException e) {
             throw new ValidacionDeIntegridad("Unauthorized", "Correo o contraseña incorrecta", request, HttpStatus.UNAUTHORIZED);
-        }catch (AuthenticationException e) {
+        } catch (AuthenticationException e) {
             throw new ValidacionDeIntegridad("Forbidden", "Autenticación fallida", request, HttpStatus.FORBIDDEN);
         }
 
+    }
+
+    @GetMapping("/check-status")
+    public ResponseEntity<DatosCheckStatus> checkStatus(
+            @AuthenticationPrincipal UsuarioEntity usuarioEntity
+    ) {
+        String nuevoToken = this.jwtUtilsService.generarToken(usuarioEntity);
+        DatosDetalleUsuario datosDetalleUsuario = new DatosDetalleUsuario((usuarioEntity));
+        DatosCheckStatus datosCheckStatus = new DatosCheckStatus(datosDetalleUsuario, nuevoToken);
+        return ResponseEntity.ok(datosCheckStatus);
     }
 }
